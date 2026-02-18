@@ -1,0 +1,104 @@
+name: Build and Deploy to EC2
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          # Pass secrets as environment variables (safer)
+          MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENWEATHERMAP_API_KEY: ${{ secrets.OPENWEATHERMAP_API_KEY }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
+          FACEBOOK_APP_SECRET: ${{ secrets.FACEBOOK_APP_SECRET }}
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          REACT_APP_SIGNALR_URL_CHAT: ${{ secrets.REACT_APP_SIGNALR_URL_CHAT }}
+          REACT_APP_SIGNALR_URL_CALL: ${{ secrets.REACT_APP_SIGNALR_URL_CALL }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: MSSQL_SA_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL
+          script: |
+            cd ~/chat_app || { mkdir -p ~/chat_app && cd ~/chat_app; }
+
+            # Clone or pull
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              git fetch origin
+              git reset --hard origin/main
+            fi
+
+            # Create .env securely (use cat with heredoc to avoid shell interpretation)
+            cat > .env << 'EOF'
+            MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+            DB_NAME=${DB_NAME}
+            ASPNETCORE_ENVIRONMENT=Production
+            JWT_KEY=${JWT_KEY}
+            OPENAI_API_KEY=${OPENAI_API_KEY}
+            OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
+            EMAIL_HOST=${EMAIL_HOST}
+            EMAIL_PORT=${EMAIL_PORT}
+            EMAIL_FROM=${EMAIL_FROM}
+            EMAIL_USERNAME=${EMAIL_USERNAME}
+            EMAIL_PASSWORD=${EMAIL_PASSWORD}
+            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
+            FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
+            REACT_APP_API_URL=${REACT_APP_API_URL}
+            REACT_APP_SIGNALR_URL_CHAT=${REACT_APP_SIGNALR_URL_CHAT}
+            REACT_APP_SIGNALR_URL_CALL=${REACT_APP_SIGNALR_URL_CALL}
+            EOF
+
+            # Substitute environment variables
+            envsubst < .env > .env.tmp && mv .env.tmp .env
+
+            # Clean up old containers and images
+            docker-compose down
+            docker system prune -f
+
+            # Deploy with build
+            docker-compose up -d --build
+
+            # Health check
+            echo "Waiting for services to start..."
+            sleep 10
+            docker-compose ps
+
+            # Show logs for debugging
+            docker-compose logs --tail=50
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/chat_app
+            # Check if all containers are running
+            if [ "$(docker-compose ps -q | wc -l)" -eq 3 ]; then
+              echo "All services running"
+            else
+              echo "Some services failed"
+              docker-compose logs
+              exit 1
+            fi

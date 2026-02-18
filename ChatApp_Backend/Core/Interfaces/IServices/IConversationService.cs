@@ -1,0 +1,27 @@
+﻿
+
+using Core.DTOs.Conversations;
+
+namespace Core.Interfaces.IServices
+{
+    public interface IConversationService
+    {
+        Task<ConversationDto> GetConversationAsync(int conversationId);
+        Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(int userId);
+        Task<IEnumerable<ConversationDto>> GetUserArchivedConversationsAsync(int userId);
+        Task<ConversationDto> CreateDirectConversationAsync(int userId1, int userId2);
+        Task<ConversationDto> CreateGroupConversationAsync(string groupName, int createdBy, List<int> memberIds);
+        Task AddMemberToConversationAsync(int conversationId, int userId);
+        Task RemoveMemberFromConversationAsync(int conversationId, int userId, int requestingUserId);
+        Task TransferAdminRightsAsync(int conversationId, int fromUserId, int toUserId);
+        Task DeleteGroupConversationAsync(int conversationId, int requestingUserId);
+        Task LeaveConversationAsync(int conversationId, int userId);
+        Task<bool> TogglePinConversationAsync(int conversationId, int userId);
+        Task<bool> ToggleArchiveConversationAsync(int conversationId, int userId);
+        Task<IEnumerable<LinkDto>> GetConversationLinksAsync(int conversationId);
+        Task UpdateMemberPermissionsAsync(int conversationId, int userId, int targetUserId, MemberPermissionsDto permissions);
+        Task<ConversationDto> UpdateGroupInfoAsync(int conversationId, int userId, UpdateGroupInfoRequest request);
+        Task<ConversationBackgroundDto> GetConversationBackgroundAsync(int conversationId, int userId);
+        Task UpdateConversationBackgroundAsync(int conversationId, int userId, string? backgroundUrl, string backgroundType);
+    }
+}

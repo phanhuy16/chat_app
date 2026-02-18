@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-light: #818cf8;
+  --primary-dark: #4338ca;
+  --message-text: 14px;
+}
+
+@layer base {
+  body {
+    @apply font-display antialiased text-slate-900 dark:text-slate-100 bg-background-light dark:bg-background-dark transition-colors duration-300;
+  }
+
+  #root {
+    @apply flex flex-col h-screen overflow-hidden;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-background-card-light dark:bg-background-card-dark backdrop-blur-md border border-white/20 dark:border-white/10 shadow-glass;
+  }
+  
+  .glass-effect-hover {
+    @apply transition-all duration-300 hover:bg-white/40 dark:hover:bg-white/20;
+  }
+
+  .premium-card {
+    @apply rounded-2xl shadow-premium border border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-all duration-300;
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark .ant-modal-content,
+.dark-modal .ant-modal-content {
+  background-color: #1e1e1e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.dark .ant-modal-header,
+.dark-modal .ant-modal-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-bottom: 16px !important;
+}
+
+.dark .ant-modal-title,
+.dark-modal .ant-modal-title {
+  color: white !important;
+}
+
+.dark .ant-modal-close,
+.dark-modal .ant-modal-close {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Theme-specific background overrides */
+html.theme-gradient-ocean body,
+html.theme-gradient-sunset body,
+html.theme-gradient-forest body,
+html.theme-glass-dark body {
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+html.theme-glass-light body {
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+  color: #1e293b !important; /* Force dark text for light glass */
+}
+
+html.theme-gradient-ocean body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background-attachment: fixed;
+}
+
+
+html.theme-gradient-sunset body {
+  background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%) !important;
+  background-attachment: fixed;
+}
+
+html.theme-gradient-forest body {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%) !important;
+  background-attachment: fixed;
+}
+
+html.theme-glass-light body {
+  background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80') no-repeat center center fixed !important;
+  background-size: cover !important;
+}
+
+html.theme-glass-dark body {
+  background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80') no-repeat center center fixed !important;
+  background-size: cover !important;
+}
+
+/* Glass effect overlays */
+html.theme-glass-light #root {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(10px);
+}
+
+html.theme-glass-dark #root {
+  background-color: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Make cards semi-transparent in glass themes */
+html[class*="theme-glass"] .bg-white,
+html[class*="theme-glass"] .dark\:bg-gray-800,
+html[class*="theme-glass"] .dark\:bg-gray-900,
+html[class*="theme-glass"] .bg-background-card-light,
+html[class*="theme-glass"] .dark\:bg-background-card-dark {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(5px);
+}
+
+html[class*="theme-glass"].dark .bg-white,
+html[class*="theme-glass"].dark .dark\:bg-gray-800,
+html[class*="theme-glass"].dark .dark\:bg-gray-900,
+html[class*="theme-glass"].dark .dark\:bg-background-card-dark {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+}

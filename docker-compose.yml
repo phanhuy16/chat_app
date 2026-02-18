@@ -1,0 +1,111 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: chatapp_db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MSSQL_PID=Express
+      # Giới hạn RAM cho SQL Server
+      - MSSQL_MEMORY_LIMIT_MB=512
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - chatapp_network
+    restart: unless-stopped
+    # Giới hạn resources
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+        reservations:
+          memory: 400M
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-S",
+          "localhost",
+          "-U",
+          "sa",
+          "-P",
+          "${MSSQL_SA_PASSWORD}",
+          "-Q",
+          "SELECT 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./ChatApp_Backend
+      dockerfile: Dockerfile
+    container_name: chatapp_backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionStrings__DefaultConnection=Server=db;Database=${DB_NAME};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true;
+      - OpenAI__ApiKey=${OPENAI_API_KEY}
+      - Jwt__SigningKey=${JWT_KEY}
+      - OpenWeatherMap__ApiKey=${OPENWEATHERMAP_API_KEY}
+      - EmailSettings__Host=${EMAIL_HOST}
+      - EmailSettings__Port=${EMAIL_PORT}
+      - EmailSettings__From=${EMAIL_FROM}
+      - EmailSettings__Username=${EMAIL_USERNAME}
+      - EmailSettings__Password=${EMAIL_PASSWORD}
+      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - Authentication__Facebook__AppId=${FACEBOOK_APP_ID}
+      - Authentication__Facebook__AppSecret=${FACEBOOK_APP_SECRET}
+    ports:
+      - "5000:80"
+    depends_on:
+      - db
+    networks:
+      - chatapp_network
+    restart: unless-stopped
+    # Giới hạn resources
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+        reservations:
+          memory: 400M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./chatapp_frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=${REACT_APP_API_URL}
+        - REACT_APP_SIGNALR_URL_CHAT=${REACT_APP_SIGNALR_URL_CHAT}
+        - REACT_APP_SIGNALR_URL_CALL=${REACT_APP_SIGNALR_URL_CALL}
+    container_name: chatapp_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - chatapp_network
+    restart: unless-stopped
+    # Giới hạn resources
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 100M
+
+networks:
+  chatapp_network:
+    driver: bridge
+
+volumes:
+  sql_data:
