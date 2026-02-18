@@ -1,10 +1,10 @@
 ﻿using API.Hubs;
 using API.Services;
 using Core.Entities;
+using Core.Enums;
+using Core.Interfaces;
 using Core.Interfaces.IRepositories;
 using Core.Interfaces.IServices;
-using Core.Interfaces;
-using Core.Enums;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -77,7 +77,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
-    
+
     // User settings
     options.User.RequireUniqueEmail = true;
 })
@@ -93,6 +93,12 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+.AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+        options.CallbackPath = "/signin-google";
+    })
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
