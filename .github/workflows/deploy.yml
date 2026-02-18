@@ -2,7 +2,7 @@ name: Build and Deploy to EC2
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
 
 jobs:
   deploy:
@@ -44,7 +44,7 @@ jobs:
               git clone https://github.com/${{ github.repository }}.git .
             else
               git fetch origin
-              git reset --hard origin/main
+              git reset --hard origin/master
             fi
 
             # Create .env securely (use cat with heredoc to avoid shell interpretation)
