@@ -26,6 +26,7 @@ jobs:
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
           FACEBOOK_APP_SECRET: ${{ secrets.FACEBOOK_APP_SECRET }}
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
@@ -35,7 +36,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: MSSQL_SA_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL
+          envs: MSSQL_SA_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL
           script: |
             cd ~/chat_app || { mkdir -p ~/chat_app && cd ~/chat_app; }
 
@@ -48,7 +49,7 @@ jobs:
             fi
 
             # Create .env securely (use cat with heredoc to avoid shell interpretation)
-            cat > .env << 'EOF'
+            cat > .env << EOF
             MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
             DB_NAME=${DB_NAME}
             ASPNETCORE_ENVIRONMENT=Production
@@ -61,15 +62,13 @@ jobs:
             EMAIL_USERNAME=${EMAIL_USERNAME}
             EMAIL_PASSWORD=${EMAIL_PASSWORD}
             GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
             FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
             FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
             REACT_APP_API_URL=${REACT_APP_API_URL}
             REACT_APP_SIGNALR_URL_CHAT=${REACT_APP_SIGNALR_URL_CHAT}
             REACT_APP_SIGNALR_URL_CALL=${REACT_APP_SIGNALR_URL_CALL}
             EOF
-
-            # Substitute environment variables
-            envsubst < .env > .env.tmp && mv .env.tmp .env
 
             # Clean up old containers and images
             docker-compose down
