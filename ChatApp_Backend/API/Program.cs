@@ -214,9 +214,12 @@ app.MapHub<ChatHub>("/hub/chat")
 app.MapHub<CallHub>("/hub/calls")
     .RequireAuthorization();
 
-// Seed AI Bot User
+// Apply migrations and seed data
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<ChatAppDbContext>();
+    await db.Database.MigrateAsync();
+
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var botUser = await userManager.FindByNameAsync("ai_bot");
     if (botUser == null)
