@@ -16,7 +16,7 @@ namespace Infrastructure.Data
             var builder = new DbContextOptionsBuilder<ChatAppDbContext>();
             var connectionString = config.GetConnectionString("DefaultConnection");
 
-            builder.UseSqlServer(connectionString);
+            builder.UseNpgsql(connectionString);
 
             return new ChatAppDbContext(builder.Options);
         }

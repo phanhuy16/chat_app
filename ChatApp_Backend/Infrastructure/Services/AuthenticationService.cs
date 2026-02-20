@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Core.DTOs.Auth;
+using Core.Entities;
+using Core.Enums;
+using Core.Interfaces.IRepositories;
+using Core.Interfaces.IServices;
+using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -7,12 +13,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Core.DTOs.Auth;
-using Core.Entities;
-using Core.Enums;
-using Core.Interfaces.IRepositories;
-using Core.Interfaces.IServices;
-using Google.Apis.Auth;
 
 namespace Infrastructure.Services
 {
@@ -355,7 +355,7 @@ namespace Infrastructure.Services
 
                 var verifyJson = await verifyResponse.Content.ReadAsStringAsync();
                 var verifyData = System.Text.Json.JsonDocument.Parse(verifyJson);
-                
+
                 if (!verifyData.RootElement.GetProperty("data").GetProperty("is_valid").GetBoolean())
                 {
                     _logger.LogError("Facebook token is not valid");
@@ -377,8 +377,8 @@ namespace Infrastructure.Services
                 var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
                 var userInfo = JsonDocument.Parse(userInfoJson);
 
-                var email = userInfo.RootElement.TryGetProperty("email", out var emailProp) 
-                    ? emailProp.GetString() 
+                var email = userInfo.RootElement.TryGetProperty("email", out var emailProp)
+                    ? emailProp.GetString()
                     : null;
                 var name = userInfo.RootElement.GetProperty("name").GetString();
                 var pictureUrl = userInfo.RootElement.GetProperty("picture")
@@ -394,12 +394,12 @@ namespace Infrastructure.Services
 
                 // 3. Check if user exists by FacebookId first, then by email
                 var user = await _userRepository.GetByFacebookIdAsync(facebookUserId!);
-                
+
                 if (user == null)
                 {
                     // Check by email
                     user = await _userRepository.GetByEmailAsync(email);
-                    
+
                     if (user != null)
                     {
                         // Link Facebook ID to existing account
@@ -612,7 +612,7 @@ namespace Infrastructure.Services
             var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
             var roles = await _userManager.GetRolesAsync(user);
-            
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),

@@ -1,41 +1,27 @@
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:16-alpine
     container_name: chatapp_db
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
-      - MSSQL_PID=Express
-      # Giới hạn RAM cho SQL Server
-      - MSSQL_MEMORY_LIMIT_MB=512
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - sql_data:/var/opt/mssql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - chatapp_network
     restart: unless-stopped
-    # Giới hạn resources
     deploy:
       resources:
         limits:
-          memory: 600M
+          memory: 200M
         reservations:
-          memory: 400M
+          memory: 100M
     healthcheck:
-      test:
-        [
-          "CMD",
-          "/opt/mssql-tools/bin/sqlcmd",
-          "-S",
-          "localhost",
-          "-U",
-          "sa",
-          "-P",
-          "${MSSQL_SA_PASSWORD}",
-          "-Q",
-          "SELECT 1",
-        ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,7 +33,7 @@ services:
     container_name: chatapp_backend
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=Server=db;Database=${DB_NAME};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true;
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${DB_NAME};Username=postgres;Password=${POSTGRES_PASSWORD}
       - OpenAI__ApiKey=${OPENAI_API_KEY}
       - Jwt__SigningKey=${JWT_KEY}
       - OpenWeatherMap__ApiKey=${OPENWEATHERMAP_API_KEY}
@@ -62,7 +48,8 @@ services:
     ports:
       - "5000:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - chatapp_network
     restart: unless-stopped
@@ -70,14 +57,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 800M
+          memory: 700M
         reservations:
           memory: 400M
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   frontend:
     build:
@@ -95,17 +77,16 @@ services:
     networks:
       - chatapp_network
     restart: unless-stopped
-    # Giới hạn resources
     deploy:
       resources:
         limits:
-          memory: 200M
+          memory: 150M
         reservations:
-          memory: 100M
+          memory: 50M
 
 networks:
   chatapp_network:
     driver: bridge
 
 volumes:
-  sql_data:
+  postgres_data:

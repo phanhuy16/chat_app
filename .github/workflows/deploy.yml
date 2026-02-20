@@ -15,7 +15,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           # Pass secrets as environment variables (safer)
-          MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           JWT_KEY: ${{ secrets.JWT_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -36,7 +36,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: MSSQL_SA_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL
+          envs: POSTGRES_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL
           script: |
             cd ~/chat_app || { mkdir -p ~/chat_app && cd ~/chat_app; }
 
@@ -50,7 +50,7 @@ jobs:
 
             # Create .env securely (use cat with heredoc to avoid shell interpretation)
             cat > .env << EOF
-            MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             DB_NAME=${DB_NAME}
             ASPNETCORE_ENVIRONMENT=Production
             JWT_KEY=${JWT_KEY}
