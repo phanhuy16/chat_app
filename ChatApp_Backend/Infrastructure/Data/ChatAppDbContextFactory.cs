@@ -9,7 +9,7 @@ namespace Infrastructure.Data
         public ChatAppDbContext CreateDbContext(string[] args)
         {
             var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../API"))
                 .AddJsonFile("appsettings.json")
                 .Build();
 

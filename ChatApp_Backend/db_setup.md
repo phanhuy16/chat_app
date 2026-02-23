@@ -27,7 +27,7 @@ Nếu bạn chỉnh sửa các class trong thư mục `Core/Entities` hoặc ch�
 ```bash
 dotnet ef migrations add <Tên_Migration> --project Infrastructure --startup-project API
 ```
-*Ví dụ: `dotnet ef migrations add AddUserStatus --project Infrastructure --startup-project API`*
+*Ví dụ: `dotnet ef migrations add InitialCreate --project Infrastructure --startup-project API`*
 
 ### C. Xóa Migration cuối cùng (Chưa update vào DB)
 Nếu bạn vừa tạo migration nhưng muốn thay đổi trước khi chạy lệnh update:

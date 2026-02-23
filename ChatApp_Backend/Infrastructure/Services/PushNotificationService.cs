@@ -11,21 +11,34 @@ namespace Infrastructure.Services
     {
         private readonly ChatAppDbContext _context;
         private readonly IConfiguration _configuration;
-        private readonly PushServiceClient _pushClient;
+        private readonly PushServiceClient? _pushClient;
 
         public PushNotificationService(ChatAppDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
-            _pushClient = new PushServiceClient
+
+            var publicKey = _configuration["Vapid:PublicKey"];
+            var privateKey = _configuration["Vapid:PrivateKey"];
+
+            if (!string.IsNullOrWhiteSpace(publicKey) && !string.IsNullOrWhiteSpace(privateKey))
             {
-                DefaultAuthentication = new VapidAuthentication(
-                    _configuration["Vapid:PublicKey"],
-                    _configuration["Vapid:PrivateKey"])
+                try
                 {
-                    Subject = "mailto:admin@example.com"
+                    _pushClient = new PushServiceClient
+                    {
+                        DefaultAuthentication = new VapidAuthentication(publicKey, privateKey)
+                        {
+                            Subject = "mailto:admin@example.com"
+                        }
+                    };
                 }
-            };
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"PushNotificationService: Failed to initialize VAPID authentication. Invalid keys? Error: {ex.Message}");
+                    _pushClient = null;
+                }
+            }
         }
 
         public string GetPublicKey()
@@ -68,6 +81,12 @@ namespace Infrastructure.Services
                 });
 
                 notification.Content = payload;
+
+                if (_pushClient == null)
+                {
+                    Console.WriteLine("PushNotificationService: _pushClient is not initialized. Skipping notification.");
+                    continue;
+                }
 
                 try
                 {

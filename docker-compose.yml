@@ -45,6 +45,8 @@ services:
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Authentication__Facebook__AppId=${FACEBOOK_APP_ID}
       - Authentication__Facebook__AppSecret=${FACEBOOK_APP_SECRET}
+      - Vapid__PublicKey=${VAPID_PUBLIC_KEY}
+      - Vapid__PrivateKey=${VAPID_PRIVATE_KEY}
     ports:
       - "5000:80"
     depends_on:
