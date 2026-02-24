@@ -34,11 +34,12 @@ jobs:
           REACT_APP_SIGNALR_URL_CALL: ${{ secrets.REACT_APP_SIGNALR_URL_CALL }}
           VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          ASPNETCORE_URLS: http://+:8080
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: POSTGRES_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY
+          envs: POSTGRES_PASSWORD,DB_NAME,JWT_KEY,OPENAI_API_KEY,OPENWEATHERMAP_API_KEY,EMAIL_HOST,EMAIL_PORT,EMAIL_FROM,EMAIL_USERNAME,EMAIL_PASSWORD,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,FACEBOOK_APP_ID,FACEBOOK_APP_SECRET,REACT_APP_API_URL,REACT_APP_SIGNALR_URL_CHAT,REACT_APP_SIGNALR_URL_CALL,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY,ASPNETCORE_URLS
           script: |
             cd ~/chat_app || { mkdir -p ~/chat_app && cd ~/chat_app; }
 
@@ -50,12 +51,12 @@ jobs:
               git reset --hard origin/master
             fi
 
-            # Create .env securely (use cat with heredoc to avoid shell interpretation)
-            cat > .env << EOF
+            # Create .env securely (YAML-safe indentation + sed strip)
+            cat << EOF | sed 's/^[[:space:]]*//' > .env
             POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             DB_NAME=${DB_NAME}
             ASPNETCORE_ENVIRONMENT=Production
-            ASPNETCORE_URLS=http://+:8080
+            ASPNETCORE_URLS=${ASPNETCORE_URLS}
             JWT_KEY=${JWT_KEY}
             OPENAI_API_KEY=${OPENAI_API_KEY}
             OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
