@@ -32,7 +32,7 @@ services:
       dockerfile: Dockerfile
     container_name: chatapp_backend
     environment:
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${DB_NAME};Username=postgres;Password=${POSTGRES_PASSWORD}
       - OpenAI__ApiKey=${OPENAI_API_KEY}
@@ -49,7 +49,7 @@ services:
       - Vapid__PublicKey=${VAPID_PUBLIC_KEY}
       - Vapid__PrivateKey=${VAPID_PRIVATE_KEY}
     ports:
-      - "5000:80"
+      - "5000:8080"
     depends_on:
       db:
         condition: service_healthy

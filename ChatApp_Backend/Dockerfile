@@ -26,6 +26,6 @@ COPY --from=build /app/out .
 RUN mkdir -p wwwroot
 
 # Expose port and start the app
-EXPOSE 80
+EXPOSE 8080
 EXPOSE 443
 ENTRYPOINT ["dotnet", "API.dll"]
