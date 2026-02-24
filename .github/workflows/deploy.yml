@@ -55,6 +55,7 @@ jobs:
             POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             DB_NAME=${DB_NAME}
             ASPNETCORE_ENVIRONMENT=Production
+            ASPNETCORE_URLS=http://+:8080
             JWT_KEY=${JWT_KEY}
             OPENAI_API_KEY=${OPENAI_API_KEY}
             OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
