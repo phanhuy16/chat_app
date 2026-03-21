@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+using Core.DTOs;
 using Core.DTOs.Attachments;
 using Core.DTOs.Messages;
 using Core.DTOs.Users;
@@ -21,7 +21,7 @@ namespace Infrastructure.Services
         private readonly ILogger<MessageService> _logger;
         private readonly IPushNotificationService _pushService;
         private readonly IConversationRepository _conversationRepository;
-        private readonly IOpenAIService _openAIService;
+        private readonly INvidiaService _nvidiaService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMessageNotificationService _notificationService;
 
@@ -31,7 +31,7 @@ namespace Infrastructure.Services
                             ILogger<MessageService> logger,
                             IPushNotificationService pushService,
                             IConversationRepository conversationRepository,
-                            IOpenAIService openAIService,
+                            INvidiaService nvidiaService,
                             IServiceScopeFactory scopeFactory,
                             IMessageNotificationService notificationService)
         {
@@ -41,7 +41,7 @@ namespace Infrastructure.Services
             _logger = logger;
             _pushService = pushService;
             _conversationRepository = conversationRepository;
-            _openAIService = openAIService;
+            _nvidiaService = nvidiaService;
             _scopeFactory = scopeFactory;
             _notificationService = notificationService;
         }
@@ -363,10 +363,18 @@ namespace Infrastructure.Services
                         using (var scope = _scopeFactory.CreateScope())
                         {
                             var scopedMessageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-                            var scopedOpenAIService = scope.ServiceProvider.GetRequiredService<IOpenAIService>();
+                            var scopedNvidiaService = scope.ServiceProvider.GetRequiredService<INvidiaService>();
                             var scopedNotificationService = scope.ServiceProvider.GetRequiredService<IMessageNotificationService>();
                             var scopedWeatherService = scope.ServiceProvider.GetRequiredService<IWeatherService>();
                             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+                            // Get/Find the Bot User for typing indicator
+                            var botUser = await userManager.FindByNameAsync("ai_bot");
+                            int botId = botUser?.Id ?? senderId; // Fallback to sender if bot not found
+                            string botName = botUser?.DisplayName ?? "AI Assistant";
+                            
+                            // Broadcast that AI is typing
+                            await scopedNotificationService.BroadcastTypingAsync(conversationId, botId, botName);
 
                             try
                             {
@@ -387,16 +395,12 @@ namespace Infrastructure.Services
                                 }
                                 else
                                 {
-                                    aiResponse = await scopedOpenAIService.GetChatResponseAsync(aiPrompt);
+                                    aiResponse = await scopedNvidiaService.GetChatResponseAsync(aiPrompt);
                                 }
 
                                 // Remove redundant prefix "Running: 🤖 **AI Assistant:**"
                                 // Just use the raw response which now has nice markdown headers
                                 var formattedResponse = aiResponse;
-
-                                // Get/Find the Bot User
-                                var botUser = await userManager.FindByNameAsync("ai_bot");
-                                int botId = botUser?.Id ?? senderId; // Fallback to sender if bot not found
 
                                 // Send and save the bot message
                                 var botMessageDto = await scopedMessageService.SendMessageAsync(conversationId, botId, formattedResponse, MessageType.Text);
@@ -419,6 +423,10 @@ namespace Infrastructure.Services
                             catch (Exception ex)
                             {
                                 _logger.LogError(ex, "Error generating AI response");
+                            }
+                            finally
+                            {
+                                await scopedNotificationService.BroadcastStopTypingAsync(conversationId, botId);
                             }
                         }
                     });

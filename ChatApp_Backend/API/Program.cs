@@ -1,4 +1,4 @@
-﻿using API.Hubs;
+using API.Hubs;
 using API.Services;
 using Core.Entities;
 using Core.Enums;
@@ -161,7 +161,7 @@ builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPollService, PollService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<IOpenAIService, OpenAIService>();
+builder.Services.AddScoped<INvidiaService, NvidiaService>();
 builder.Services.AddScoped<IMessageNotificationService, MessageNotificationService>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddHostedService<ScheduledMessageWorker>();

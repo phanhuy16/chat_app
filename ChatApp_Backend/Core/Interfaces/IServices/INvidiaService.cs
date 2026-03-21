@@ -1,6 +1,6 @@
 namespace Core.Interfaces.IServices
 {
-    public interface IOpenAIService
+    public interface INvidiaService
     {
         Task<string> GetChatResponseAsync(string prompt);
     }
